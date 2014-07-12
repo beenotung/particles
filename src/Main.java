@@ -1,12 +1,8 @@
-
 public class Main {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		ParticlesCanvas system1 = new ParticlesCanvas(800,600,1,1000);
+		system1.start();
 	}
 
 }
