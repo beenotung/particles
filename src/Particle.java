@@ -1,29 +1,40 @@
-import java.awt.geom.Point2D;
-
 public class Particle {
-	private Point2D location, speed, acceleration;
-	private double time;
-	double dx, dy;
+	public Coor2D location, speed, acceleration;
+	public double dx, dy;
 
-	public Particle(Point2D location, Point2D speed, Point2D acceleration) {
-		this.location = location;
-		this.speed = speed;
-		this.acceleration = acceleration;
+	Particle(Coor2D location, Coor2D speed, Coor2D acceleration) {
+		this.location = (Coor2D) location.clone();
+		this.speed = (Coor2D) speed.clone();
+		this.acceleration = (Coor2D) acceleration.clone();
 	}
-
-	public void calc(double t) {
-		time = t;
-		dx = calcS(speed.getX(), acceleration.getX(), time);
-		dy = calcS(speed.getY(), acceleration.getY(), time);
-	};
 
 	public void move() {
-		location.setLocation(location.getX() + dx, location.getY() + dy);
-		speed.setLocation(dx, dy);
-	};
-
-	public double calcS(double u, double a, double t) {
-		return u * t + 0.5 * a * t * t;
+		location.x+=dx;
+		location.y+=dy;
+		speed.set(dx, dy);
 	}
 
+	public void bound(double xMin, double yMin, double xMax, double yMax) {
+		double x = location.x;
+		double y = location.y;
+
+		if (x < xMin)
+			x = xMin + (xMin - x);
+		if (x > xMax)
+			x = xMax - (x - xMax);
+		if (y < yMin)
+			y = yMin + (yMin - y);
+		if (y > yMax)
+			y = yMax - (y - yMax);
+
+		if ((x != location.x) || (y != location.y)) {
+			if (x != location.x)
+				speed.x *= -1;
+			if (x != location.x)
+				speed.y *= -1;
+		}
+
+		location.x = x;
+		location.y = y;
+	};
 }

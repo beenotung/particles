@@ -1,13 +1,14 @@
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
-
-import com.sun.org.apache.xml.internal.serializer.utils.Utils;
 
 public class ParticlesCanvas extends Canvas implements Runnable {
 
@@ -25,8 +26,8 @@ public class ParticlesCanvas extends Canvas implements Runnable {
 	private BufferedImage image;
 	private int[] pixels;
 
-	private final int NPARTICLE;
-	private Particle[] particles;
+	private int NPARTICLE;
+	ArrayList<Particle> particles;
 
 	private int tickCount = 0;
 
@@ -52,7 +53,7 @@ public class ParticlesCanvas extends Canvas implements Runnable {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 
-		particles = new Particle[NPARTICLE];
+		particles = new ArrayList<Particle>(NPARTICLE);
 	}
 
 	@Override
@@ -94,22 +95,65 @@ public class ParticlesCanvas extends Canvas implements Runnable {
 
 	private void tick() {
 		tickCount++;
+		calc();
+		move();
+	}
+
+	private void calc() {
+		double t = 1;
+		for (int i = 0; i < particles.size(); i++) {
+			particles.get(i).dx = particles.get(i).speed.x;
+			particles.get(i).dy = particles.get(i).speed.y;
+		}
+	}
+
+	private void move() {
+		for (int i = 0; i < particles.size(); i++) {
+			particles.get(i).move();
+			particles.get(i).bound(0, 0, WIDTH, HEIGHT);
+		}
 	}
 
 	private void render() {
+		BufferStrategy bufferStrategy = getBufferStrategy();
+		if (bufferStrategy == null) {
+			createBufferStrategy(3);
+			return;
+		}
+
+		clear(pixels);
+		int x, y;
+		for (int i = 0; i < particles.size(); i++) {
+			x = (int) particles.get(i).location.x;
+			y = (int) particles.get(i).location.y;
+			pixels[x + y * WIDTH] = Colors.getColorCode(1D, 1D, 1D);
+			// pixels[i+i*WIDTH]=Colors.getColorCode(1D,1D,1D);
+			System.out.println(i + " : " + x + ", " + y);
+		}
+
+		Graphics graphics = bufferStrategy.getDrawGraphics();
+		graphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+		// graphics.drawImage(image,0,0,WIDTH,HEIGHT,0,0,WIDTH,HEIGHT,frame);
+		graphics.dispose();
+		bufferStrategy.show();
+	}
+
+	private void clear(int[] pixels) {
+		for (int i = 0; i < pixels.length; i++)
+			pixels[i] = Colors.getColorCode(0, 0, 0);
 	}
 
 	private void init() {
-		for (int i = 0; i < pixels.length; i++)
-			pixels[i] = Colors.getColorCode(0, 0, 0);
+		// clear(pixels);
 
-		Point2D location=new Point2D.Double(0,0);
-		Point2D speed=new Point2D.Double(1,1);
-		Point2D acceleration=new Point2D.Double(0,0);
-		for (int i = 0; i < particles.length; i++){
-			location.setLocation();
-
-			particles[i]=new Particle(location, speed, acceleration);
+		Coor2D location = new Coor2D(0, 0);
+		Coor2D speed = new Coor2D(1, 1);
+		Coor2D acceleration = new Coor2D(0, 0);
+		for (int i = 0; i < particles.size(); i++) {
+			// location.setLocation(Utils.random.nextDouble() * WIDTH,
+			// Utils.random.nextDouble() * HEIGHT);
+			location.set(i, i);
+			particles.add(new Particle(location, speed, acceleration));
 		}
 	}
 
